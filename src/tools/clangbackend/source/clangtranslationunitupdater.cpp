@@ -219,8 +219,26 @@ bool TranslationUnitUpdater::reparseWasSuccessful() const
 
 CommandLineArguments TranslationUnitUpdater::commandLineArguments() const
 {
+    Utf8StringVector filteredCompilationArguments = m_in.compilationArguments;
+    for (auto iter = filteredCompilationArguments.begin(); iter != filteredCompilationArguments.end(); )
+    {
+        const Utf8String &entry = *iter;
+        const QByteArray &asByteArray = entry;
+        if (asByteArray == QByteArrayLiteral("-mlongcalls") ||
+            asByteArray == QByteArrayLiteral("-fstrict-volatile-bitfields") ||
+            asByteArray == QByteArrayLiteral("-fstack-reuse=all") ||
+            asByteArray == QByteArrayLiteral("--target=xtensa-esp32-elf") ||
+            asByteArray == QByteArrayLiteral("-m32"))
+        {
+            iter = filteredCompilationArguments.erase(iter);
+        }
+        else
+        {
+            iter++;
+        }
+    }
     return CommandLineArguments(m_in.filePath.constData(),
-                                m_in.compilationArguments,
+                                filteredCompilationArguments,
                                 isVerboseModeEnabled());
 }
 
